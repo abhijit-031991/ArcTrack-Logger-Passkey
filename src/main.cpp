@@ -6,7 +6,7 @@
 #include <SoftwareSerial.h>
 
 // RX, TX expected from permaDefs.h
-SoftwareSerial mySerial(TX, RX);
+HardwareSerial LoggerSerial(LPUART1); // RX, TX for GPS
 
 // BLE Service
 BLEService dataService("0X189A");
@@ -80,8 +80,8 @@ void checkButton() {
 }
 
 void processSerialData() {
-  while (mySerial.available()) {
-    char c = mySerial.read();
+  while (LoggerSerial.available()) {
+    char c = LoggerSerial.read();
     
     // Add character to buffer
     if (bufferIndex < SERIAL_BUF_SIZE - 1) {
@@ -157,7 +157,7 @@ void processBLEData() {
       rPing.request = (byte)msg;
       
       // Send binary struct over SoftwareSerial
-      mySerial.write((uint8_t*)&rPing, sizeof(rPing));
+      LoggerSerial.write((uint8_t*)&rPing, sizeof(rPing));
       SerialUSB.println("Sent reqPing via SoftwareSerial");
     }
     
@@ -173,7 +173,7 @@ void processBLEData() {
       SerialUSB.print(F("HDOP: ")); SerialUSB.println(set.hdop);
       
       // Send binary struct over SoftwareSerial
-      mySerial.write((byte*)&set, sizeof(set));
+      LoggerSerial.write((byte*)&set, sizeof(set));
       SerialUSB.println("Sent settings via SoftwareSerial");
     }
     
@@ -197,7 +197,7 @@ void setup() {
   digitalWrite(DTR_PIN, HIGH); // Initialize DTR to LOW
 
   // Start SoftwareSerial
-  mySerial.begin(9600);
+  LoggerSerial.begin(9600);
   SerialUSB.println("SoftwareSerial started on RX/TX");
 
   // BLE setup
